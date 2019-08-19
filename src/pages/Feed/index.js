@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, FlatList } from 'react-native';
 
 import LazyImage from '../../components/LazyImage';
@@ -11,6 +11,7 @@ export default function Feed() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [viewable, setViewable] = useState([]);
 
   async function loadPage(pageNumber = page, shouldRefreshing = false) {
     if(total && pageNumber > total) return ;
@@ -43,28 +44,43 @@ export default function Feed() {
     setRefreshing(false);
   }
 
+  const handleViewableChanged = useCallback(({ changed }) => {
+    setViewable(changed.map(({ item }) => item.id));
+  }, []);
+
   return (
     <View>
       <FlatList
+        key="list"
         data={feed}
-        keyExtractor={post => String(post.id)}
-        onEndReached={() => loadPage()}
-        onEndReachedThreshold={0.1}
+        keyExtractor={item => String(item.id)}
+        onViewableItemsChanged={handleViewableChanged}
+        viewabilityConfig={{
+          viewAreaCoveragePercentThreshold: 10,
+        }}
+        showsVerticalScrollIndicator={false}
         onRefresh={refreshList}
         refreshing={refreshing}
+        onEndReachedThreshold={0.1}
+        onEndReached={() => loadPage()}
         ListFooterComponent={loading && <Loading />}
         renderItem={({ item }) => (
           <Post>
             <Header>
-              <Avatar source={{uri: item.author.avatar}}/>
+              <Avatar source={{ uri: item.author.avatar }} />
               <Name>{item.author.name}</Name>
             </Header>
+
             <LazyImage
-              ratio={item.aspectRatio}
+              aspectRatio={item.aspectRatio} 
+              shouldLoad={viewable.includes(item.id)} 
               smallSource={{ uri: item.small }}
-              source={{uri: item.image}}
+              source={{ uri: item.image }}
             />
-            <Description><Name>{item.author.name}</Name> { item.description }</Description>
+
+            <Description>
+              <Name>{item.author.name}</Name> {item.description}
+            </Description>
           </Post>
         )}
       />

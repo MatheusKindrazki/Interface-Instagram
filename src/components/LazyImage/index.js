@@ -1,49 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Animated } from 'react-native';
-
 import { Small, Original } from './styles';
 
-const OriginalAnimated = Animated.createAnimatedComponent(Original);
+const AnimatedOriginal = Animated.createAnimatedComponent(Original);
 
 export default function LazyImage({
   smallSource,
   source,
-  ratio
+  shouldLoad = false,
+  aspectRatio = 1,
 }) {
-
   const opacity = new Animated.Value(0);
+
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    setTimeout(() => {
-      setLoaded(true);
-    }, 1000)
-  }, [])
+    if (shouldLoad) {
+      setTimeout(() => {
+        setLoaded(true);
+      }, 1000);
+    }
+  }, [shouldLoad])
 
   function handleAnimate() {
     Animated.timing(opacity, {
-      toValue: 1,
       duration: 500,
-      useNativeDriver: true,
-    }).start()
+      toValue: 1,
+      useNativeDriver: true, 
+    }).start();
   }
 
   return (
-    <Small
+    <Small 
       source={smallSource}
-      ratio={ratio}
+      ratio={aspectRatio}
       resizeMode="contain"
-      blurRadius={2}
+      blurRadius={3}
     >
-      {loaded && 
-        <OriginalAnimated 
-        style={{ opacity }}
-          source={source}
-          ratio={ratio}
-          resizeMode="contain"
+      { loaded && (
+        <AnimatedOriginal 
+          style={{ opacity }}
           onLoadEnd={handleAnimate}
+          source={source} 
+          ratio={aspectRatio} 
+          resizeMode="contain"
         />
-      }
+      ) }
     </Small>
   );
 }

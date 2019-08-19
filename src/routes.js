@@ -4,11 +4,11 @@ import { createAppContainer, createStackNavigator } from 'react-navigation';
 
 import logo from './assets/instagram.png';
 
-import Feed from './pages/Feed';
+import Brasil from './pages/Feed';
 
 const Routes = createAppContainer(
   createStackNavigator({
-    Feed
+    Brasil
   },{
     headerLayoutPreset: 'center',
     defaultNavigationOptions:  {
